@@ -126,6 +126,32 @@ pre code{background:none;padding:0;font-size:inherit;color:inherit;border-radius
 .assembled p{color:var(--muted);margin:0 0 16px;max-width:66ch}
 footer{padding-block:20px 48px;color:var(--muted);font-size:13px}
 
+.learn{padding-block:8px 40px;min-width:0}
+.learn h2{font-family:var(--f-display);font-weight:700;font-size:clamp(26px,3.4vw,34px);letter-spacing:-.015em;line-height:1.1;margin:0 0 10px;text-wrap:balance}
+.learn h3{margin-top:34px}
+.lessons{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.lesson{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.lesson b{display:block;font-weight:600;font-size:15px;margin-bottom:4px;line-height:1.35}
+.lesson span{font-size:14px;color:var(--muted)}
+.gains{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.gain{border-top:2px solid var(--accent);padding-top:10px}
+.gain b{display:block;font-family:var(--f-display);font-weight:500;font-size:18px;margin-bottom:4px}
+.gain p{margin:0;font-size:14px;color:var(--muted)}
+.tracks{display:grid;gap:0}
+.track{display:grid;grid-template-columns:200px minmax(0,1fr);gap:18px;padding:14px 0;border-top:1px solid var(--line)}
+.track:last-child{border-bottom:1px solid var(--line)}
+.track b{font-weight:600;font-size:15px}
+.track ul{margin:0;padding-left:18px;font-size:14px;color:var(--muted)}
+.track li+li{margin-top:3px}
+.pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.pill{font-family:var(--f-mono);font-size:11px;padding:3px 9px;border-radius:999px;background:var(--model-soft);color:var(--model)}
+.path{list-style:none;margin:0;padding:0;display:grid;gap:0;counter-reset:p}
+.path li{display:grid;grid-template-columns:40px minmax(0,1fr);gap:12px;padding:12px 0;border-top:1px solid var(--line);counter-increment:p}
+.path li::before{content:counter(p,decimal-leading-zero);font-family:var(--f-mono);font-size:13px;color:var(--accent);padding-top:2px}
+.path b{font-weight:600}
+.path span{color:var(--muted);font-size:14px;display:block}
+@media (max-width:620px){.track{grid-template-columns:minmax(0,1fr);gap:6px}}
+
 @media (max-width: 900px){
   .layout{grid-template-columns:minmax(0,1fr);gap:0}
   nav.index{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);margin-inline:-16px;padding:10px 16px;border-bottom:1px solid var(--line);margin-bottom:24px}
@@ -190,6 +216,7 @@ footer{padding-block:20px 48px;color:var(--muted);font-size:13px}
     <li><a href="#observability"><span>07</span>Observability</a></li>
     <li><a href="#result"><span>08</span>Result</a></li>
     <li><a href="#assembled"><span>··</span>All together</a></li>
+    <li><a href="#learn"><span>··</span>What you'll learn</a></li>
   </ol>
 </nav>
 
@@ -777,6 +804,51 @@ async def chat(body: ChatIn, user=Depends(current_user)):
   <p style="margin:0">Install with <code>pip install claude-agent-sdk</code> inside a virtual environment and set <code>ANTHROPIC_API_KEY</code>. APIs change often, so check the <a href="https://code.claude.com/docs/en/agent-sdk/python">Agent SDK Python reference</a> before shipping.</p>
 </section>
 
+<section class="learn" id="learn">
+  <p class="tag">After reading</p>
+  <h2>What you'll learn and where it leads</h2>
+  <p class="lede">The code is specific to one support agent. The ideas behind it apply to every agent you'll build or evaluate.</p>
+
+  <h3>Nine takeaways</h3>
+  <div class="lessons">
+    <div class="lesson"><b>The model is one block of eight.</b><span>Most of an agent's quality comes from the harness: context, tools and limits.</span></div>
+    <div class="lesson"><b>An agent is a loop.</b><span>Read, request a tool or answer, repeat. Understand <code>stop_reason</code> and the rest follows.</span></div>
+    <div class="lesson"><b>Context is a design job.</b><span>Give only what this request needs, label each source, and keep per-user data out of the system prompt.</span></div>
+    <div class="lesson"><b>Tools are an interface for a model.</b><span>Plain names, descriptions that say when to use them, and errors that say what to do next.</span></div>
+    <div class="lesson"><b>Prompts guide; code enforces.</b><span>Money limits, permissions and identity belong in hooks and tool code, never only in the prompt.</span></div>
+    <div class="lesson"><b>Memory has layers.</b><span>Context window, session and long-term facts each need their own home and their own rules.</span></div>
+    <div class="lesson"><b>Measure before you improve.</b><span>Log tool calls, record cost and turns, and rerun evals after every change.</span></div>
+    <div class="lesson"><b>Design the failure path.</b><span>Structured output, a success check, and a human handoff that carries the session.</span></div>
+    <div class="lesson"><b>Start simple.</b><span>A fixed workflow is often enough. Add autonomy only when the steps can't be predicted.</span></div>
+  </div>
+
+  <h3>What a reader comes away with</h3>
+  <div class="gains">
+    <div class="gain"><b>A mental model</b><p>You can spot the eight blocks in any agent product, so new frameworks become variations rather than new subjects.</p></div>
+    <div class="gain"><b>Practical skills</b><p>Write the loop by hand, build MCP tools, write a scoped system prompt, enforce policy with hooks, and run evals.</p></div>
+    <div class="gain"><b>Engineering judgment</b><p>You know the failure modes that separate a demo from something customers can safely use.</p></div>
+    <div class="gain"><b>A reusable skeleton</b><p>Swap the tools and policy, and the refund agent becomes a helpdesk, sales or operations agent.</p></div>
+  </div>
+
+  <h3>Where this path can lead</h3>
+  <div class="tracks">
+    <div class="track"><b>Deeper agent engineering</b><ul><li>Multi-agent systems: an orchestrator handing work to specialist subagents</li><li>Long-running agents with checkpoints that survive restarts</li><li>Domain coding agents with sandboxes and test loops</li></ul></div>
+    <div class="track"><b>Reliability and evaluation</b><ul><li>Eval engineering: test sets, model-graded checks, regression runs</li><li>Tracing, cost tuning and production monitoring</li><li>Prompt-injection defense, permission design and audit trails</li></ul></div>
+    <div class="track"><b>Integration and platforms</b><ul><li>MCP servers that connect company systems to any agent</li><li>Internal agent platforms with shared guardrails and logging</li></ul></div>
+    <div class="track"><b>Roles</b><div><ul><li>Hands-on: building and shipping agents, or building them for clients</li><li>Product: knowing what's feasible, what's risky and how to measure it</li><li>Founding: most vertical AI products are a domain harness around a model</li></ul><div class="pills"><span class="pill">AI / agent engineer</span><span class="pill">Applied AI engineer</span><span class="pill">AI product manager</span><span class="pill">Founder</span></div></div></div>
+  </div>
+
+  <h3>A six-step practice path</h3>
+  <ol class="path">
+    <li><div><b>Build the refund agent with mock data.</b><span>Then break each block on purpose and watch what changes.</span></div></li>
+    <li><div><b>Point it at a real problem.</b><span>Something from your own work, with your own tools and rules.</span></div></li>
+    <li><div><b>Add a triage agent.</b><span>Route requests to specialists to learn orchestration.</span></div></li>
+    <li><div><b>Write an MCP server.</b><span>Wrap a system you already use and connect it.</span></div></li>
+    <li><div><b>Write 20 eval cases.</b><span>Improve the agent until they all pass, then keep them passing.</span></div></li>
+    <li><div><b>Ship it to a few real users.</b><span>Read the logs. That's where the real lessons are.</span></div></li>
+  </ol>
+</section>
+
 </main>
 </div>
 <footer>Agent Harness Field Guide · Code targets the Claude Agent SDK for Python as documented in October 2026.</footer>
@@ -840,7 +912,7 @@ async def chat(body: ChatIn, user=Depends(current_user)):
         }
       });
     },{rootMargin:"-30% 0px -60% 0px"});
-    document.querySelectorAll(".block,.assembled").forEach(function(s){obs.observe(s)});
+    document.querySelectorAll(".block,.assembled,.learn").forEach(function(s){obs.observe(s)});
   }
 })();
 </script>
