@@ -1,0 +1,848 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Agent Harness Field Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: blueprint-style reference. Sticky block index on the left, one long column of blocks, each = flow strip + parts + code. */
+:root{
+  --bg:#F3F5F8; --surface:#FFFFFF; --ink:#131A23; --muted:#596473; --line:#D9DFE6;
+  --accent:#2C52CF; --accent-soft:#E5EBFB; --model:#BD4F27; --model-soft:#FAE8DF;
+  --ok:#1F7A4D; --ok-soft:#E1F2E8; --warn:#9A5B00; --warn-soft:#FBEFD9;
+  --code-bg:#101823; --code-ink:#D6DEE8; --code-kw:#93B4FF; --code-str:#A9D69E; --code-com:#73839A; --code-num:#F2B880; --code-bar:#18222F;
+  --f-display:"Bricolage Grotesque", "Avenir Next", "Segoe UI", sans-serif;
+  --f-body:"IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0D1218; --surface:#141B24; --ink:#E5EAF0; --muted:#94A1AF; --line:#253041;
+  --accent:#7E9CFF; --accent-soft:#1B2640; --model:#F08B5E; --model-soft:#2F1F17;
+  --ok:#6CCB97; --ok-soft:#14291E; --warn:#E9B357; --warn-soft:#2D2312;
+  --code-bg:#0A0F15; --code-ink:#D6DEE8; --code-kw:#93B4FF; --code-str:#A9D69E; --code-com:#6F7F93; --code-num:#F2B880; --code-bar:#121A24;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0D1218; --surface:#141B24; --ink:#E5EAF0; --muted:#94A1AF; --line:#253041;
+  --accent:#7E9CFF; --accent-soft:#1B2640; --model:#F08B5E; --model-soft:#2F1F17;
+  --ok:#6CCB97; --ok-soft:#14291E; --warn:#E9B357; --warn-soft:#2D2312;
+  --code-bg:#0A0F15; --code-ink:#D6DEE8; --code-kw:#93B4FF; --code-str:#A9D69E; --code-com:#6F7F93; --code-num:#F2B880; --code-bar:#121A24;
+  color-scheme:dark}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:72px}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.65;margin:0;padding-inline:16px;padding-block:0}
+a{color:var(--accent)}
+code{font-family:var(--f-mono);font-size:.86em;background:var(--accent-soft);color:var(--ink);padding:.08em .35em;border-radius:4px}
+.wrap{max-width:1180px;margin:0 auto}
+
+/* hero */
+.hero{padding-block:48px 28px;max-width:780px}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 12px}
+h1{font-family:var(--f-display);font-weight:700;font-size:clamp(34px,5.2vw,56px);line-height:1.04;letter-spacing:-.02em;margin:0 0 16px;text-wrap:balance}
+.hero p{font-size:18px;color:var(--muted);margin:0;max-width:62ch}
+.scenario{display:flex;gap:12px;align-items:flex-start;margin-top:22px;padding:14px 16px;border:1px solid var(--line);border-radius:10px;background:var(--surface);max-width:680px}
+.scenario b{font-weight:600}
+.scenario .lbl{font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--model);white-space:nowrap;padding-top:3px}
+
+/* overview diagram */
+.overview{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px 20px 12px;margin-bottom:40px}
+.overview h2{font-family:var(--f-display);font-weight:500;font-size:20px;margin:0 0 4px}
+.overview p{margin:0 0 10px;color:var(--muted);font-size:14px}
+.diagram{overflow-x:auto}
+.diagram svg{display:block;width:100%;min-width:560px;height:auto}
+.dg-box{fill:var(--surface);stroke:var(--line)}
+.dg-part{fill:var(--accent-soft);stroke:var(--accent);stroke-width:.8}
+.dg-model{fill:var(--model-soft);stroke:var(--model);stroke-width:.8}
+.dg-t{font-family:var(--f-body);font-size:14px;font-weight:600;fill:var(--ink)}
+.dg-s{font-family:var(--f-body);font-size:12px;fill:var(--muted)}
+.dg-n{font-family:var(--f-mono);font-size:11px;fill:var(--accent)}
+.dg-nm{font-family:var(--f-mono);font-size:11px;fill:var(--model)}
+.dg-line{stroke:var(--muted);stroke-width:1.2;fill:none}
+.dg-frame{fill:none;stroke:var(--muted);stroke-width:.8;stroke-dasharray:5 4}
+.dg-link{cursor:pointer}
+.dg-link:hover rect,.dg-link:focus rect{stroke-width:2}
+.dg-link:focus{outline:none}
+
+/* main grid */
+.layout{display:grid;grid-template-columns:210px minmax(0,1fr);gap:40px;align-items:start}
+nav.index{position:sticky;top:calc(env(safe-area-inset-top,0px) + 20px)}
+nav.index p{font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
+nav.index ol{list-style:none;margin:0;padding:0;display:grid;gap:2px;border-left:1px solid var(--line)}
+nav.index a{display:flex;gap:10px;align-items:baseline;padding:6px 10px 6px 14px;margin-left:-1px;border-left:2px solid transparent;text-decoration:none;color:var(--muted);font-size:14px}
+nav.index a span{font-family:var(--f-mono);font-size:11px;font-variant-numeric:tabular-nums}
+nav.index a:hover{color:var(--ink)}
+nav.index a.on{color:var(--ink);border-left-color:var(--accent);font-weight:500}
+nav.index a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* blocks */
+.block{padding-block:8px 48px;border-bottom:1px solid var(--line);margin-bottom:40px;min-width:0}
+.block:last-of-type{border-bottom:0}
+.tag{font-family:var(--f-mono);font-size:12px;letter-spacing:.06em;color:var(--accent);margin:0 0 6px}
+.block.model .tag{color:var(--model)}
+.block h2{font-family:var(--f-display);font-weight:700;font-size:clamp(26px,3.4vw,34px);letter-spacing:-.015em;line-height:1.1;margin:0 0 10px;text-wrap:balance}
+.lede{font-size:17px;color:var(--muted);max-width:66ch;margin:0 0 22px}
+h3{font-family:var(--f-body);font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
+
+.flow{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 26px}
+.step{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;background:var(--surface);border:1px solid var(--line);font-size:14px}
+.step i{font-style:normal;font-family:var(--f-mono);font-size:11px;color:var(--accent);font-variant-numeric:tabular-nums}
+.block.model .step i{color:var(--model)}
+.arrow{color:var(--muted);font-size:14px}
+.loopback{font-family:var(--f-mono);font-size:12px;color:var(--muted);padding:6px 10px;border:1px dashed var(--line);border-radius:8px}
+
+.cols{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:28px;margin-bottom:26px}
+.parts{display:grid;gap:0;margin:0}
+.parts div{display:grid;grid-template-columns:150px minmax(0,1fr);gap:14px;padding:10px 0;border-top:1px solid var(--line)}
+.parts div:last-child{border-bottom:1px solid var(--line)}
+.parts dt{font-weight:600;font-size:14px}
+.parts dd{margin:0;font-size:14px;color:var(--muted)}
+.side{display:grid;gap:14px;align-content:start;min-width:0}
+.note{border-radius:10px;padding:14px 16px;font-size:14px}
+.note .lbl{display:block;font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px}
+.note.ex{background:var(--model-soft)}
+.note.ex .lbl{color:var(--model)}
+.note.warn{background:var(--warn-soft)}
+.note.warn .lbl{color:var(--warn)}
+.note ul{margin:0;padding-left:18px}
+.note li+li{margin-top:4px}
+
+figure.code{margin:0 0 18px;border-radius:12px;overflow:hidden;background:var(--code-bg);min-width:0}
+.code-bar{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 10px 8px 16px;background:var(--code-bar);font-family:var(--f-mono);font-size:12px;color:var(--code-com)}
+.code-bar b{color:var(--code-ink);font-weight:500}
+.copy{font:inherit;font-size:12px;color:var(--code-ink);background:transparent;border:1px solid #2C3A4C;border-radius:6px;padding:4px 10px;cursor:pointer}
+.copy:hover{border-color:#4A5C73}
+.copy:focus-visible{outline:2px solid var(--code-kw);outline-offset:2px}
+pre{margin:0;padding:16px 18px;overflow-x:auto;font-family:var(--f-mono);font-size:13px;line-height:1.6;color:var(--code-ink);tab-size:4}
+pre code{background:none;padding:0;font-size:inherit;color:inherit;border-radius:0}
+.k{color:var(--code-kw)} .s{color:var(--code-str)} .c{color:var(--code-com);font-style:italic} .n{color:var(--code-num)}
+
+.explain{display:grid;gap:8px;margin:0;padding:0;list-style:none;max-width:72ch}
+.explain li{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;font-size:15px}
+.explain li code{white-space:nowrap}
+.explain .mk{font-family:var(--f-mono);font-size:12px;color:var(--accent);padding-top:3px}
+
+.assembled{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px;margin-bottom:60px;min-width:0}
+.assembled h2{font-family:var(--f-display);font-weight:700;font-size:28px;margin:0 0 8px}
+.assembled p{color:var(--muted);margin:0 0 16px;max-width:66ch}
+footer{padding-block:20px 48px;color:var(--muted);font-size:13px}
+
+@media (max-width: 900px){
+  .layout{grid-template-columns:minmax(0,1fr);gap:0}
+  nav.index{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);margin-inline:-16px;padding:10px 16px;border-bottom:1px solid var(--line);margin-bottom:24px}
+  nav.index p{display:none}
+  nav.index ol{display:flex;overflow-x:auto;border-left:0;gap:6px;scrollbar-width:none}
+  nav.index a{white-space:nowrap;border:1px solid var(--line);border-radius:999px;padding:5px 12px;margin:0;background:var(--surface)}
+  nav.index a.on{border-color:var(--accent);background:var(--accent-soft)}
+  .cols{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width: 520px){
+  .parts div{grid-template-columns:minmax(0,1fr);gap:2px}
+  .hero{padding-block:32px 20px}
+}
+</style>
+
+<div class="wrap">
+<header class="hero">
+  <p class="eyebrow">Claude Agent SDK · Python · Field guide</p>
+  <h1>Building a Claude agent harness, one block at a time</h1>
+  <p>Each of the eight blocks below gets its internal flow, its parts, working code, and the mistakes people make with it. Every block follows the same request through the same agent, so the code pieces fit together at the end.</p>
+  <div class="scenario"><span class="lbl">Running example</span><span>A support agent for an online shop. A customer writes <b>"Where's my refund for order 1182?"</b> The agent looks up the order, issues refunds up to $100 on its own, and hands anything larger to a human.</span></div>
+</header>
+
+<section class="overview" aria-labelledby="ov-h">
+  <h2 id="ov-h">The whole harness</h2>
+  <p>Select any block to jump to it. The coral block is the model; everything in blue is code you write.</p>
+  <div class="diagram">
+  <svg viewBox="0 0 680 440" role="img" aria-labelledby="ov-t ov-d">
+    <title id="ov-t">Custom harness architecture</title>
+    <desc id="ov-d">A trigger starts the harness. Context assembly feeds Claude, Claude calls tools, and tool results loop back to Claude. Memory, guardrails and observability support the loop. The result goes back out.</desc>
+    <defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+    <a href="#trigger" class="dg-link"><rect class="dg-box" x="240" y="16" width="200" height="48" rx="8"/><text class="dg-n" x="256" y="44">01</text><text class="dg-t" x="350" y="45" text-anchor="middle">Trigger</text></a>
+    <line class="dg-line" x1="340" y1="64" x2="340" y2="86" marker-end="url(#ah)"/>
+    <rect class="dg-frame" x="30" y="90" width="620" height="262" rx="18"/>
+    <text class="dg-s" x="52" y="114">Your harness</text>
+    <a href="#context" class="dg-link"><rect class="dg-part" x="60" y="134" width="170" height="60" rx="8"/><text class="dg-n" x="74" y="154">02</text><text class="dg-t" x="145" y="158" text-anchor="middle">Context</text><text class="dg-s" x="145" y="178" text-anchor="middle">Prompt, docs, history</text></a>
+    <a href="#claude" class="dg-link"><rect class="dg-model" x="255" y="134" width="170" height="60" rx="8"/><text class="dg-nm" x="269" y="154">03</text><text class="dg-t" x="340" y="158" text-anchor="middle">Claude</text><text class="dg-s" x="340" y="178" text-anchor="middle">Decides next step</text></a>
+    <a href="#tools" class="dg-link"><rect class="dg-part" x="450" y="134" width="170" height="60" rx="8"/><text class="dg-n" x="464" y="154">04</text><text class="dg-t" x="535" y="158" text-anchor="middle">Tools</text><text class="dg-s" x="535" y="178" text-anchor="middle">Run real actions</text></a>
+    <line class="dg-line" x1="230" y1="164" x2="252" y2="164" marker-end="url(#ah)"/>
+    <line class="dg-line" x1="425" y1="164" x2="447" y2="164" marker-end="url(#ah)"/>
+    <path class="dg-line" d="M535 194 L535 220 L340 220 L340 197" marker-end="url(#ah)"/>
+    <text class="dg-s" x="440" y="240" text-anchor="middle">tool results loop back</text>
+    <a href="#memory" class="dg-link"><rect class="dg-part" x="60" y="268" width="170" height="60" rx="8"/><text class="dg-n" x="74" y="288">05</text><text class="dg-t" x="145" y="292" text-anchor="middle">Memory</text><text class="dg-s" x="145" y="312" text-anchor="middle">State across runs</text></a>
+    <a href="#guardrails" class="dg-link"><rect class="dg-part" x="255" y="268" width="170" height="60" rx="8"/><text class="dg-n" x="269" y="288">06</text><text class="dg-t" x="340" y="292" text-anchor="middle">Guardrails</text><text class="dg-s" x="340" y="312" text-anchor="middle">Checks every action</text></a>
+    <a href="#observability" class="dg-link"><rect class="dg-part" x="450" y="268" width="170" height="60" rx="8"/><text class="dg-n" x="464" y="288">07</text><text class="dg-t" x="535" y="292" text-anchor="middle">Observability</text><text class="dg-s" x="535" y="312" text-anchor="middle">Logs, cost, evals</text></a>
+    <line class="dg-line" x1="340" y1="352" x2="340" y2="372" marker-end="url(#ah)"/>
+    <a href="#result" class="dg-link"><rect class="dg-box" x="240" y="376" width="200" height="48" rx="8"/><text class="dg-n" x="256" y="404">08</text><text class="dg-t" x="350" y="405" text-anchor="middle">Result</text></a>
+  </svg>
+  </div>
+</section>
+
+<div class="layout">
+<nav class="index" aria-label="Blocks">
+  <p>Blocks</p>
+  <ol>
+    <li><a href="#trigger"><span>01</span>Trigger</a></li>
+    <li><a href="#context"><span>02</span>Context</a></li>
+    <li><a href="#claude"><span>03</span>Claude</a></li>
+    <li><a href="#tools"><span>04</span>Tools</a></li>
+    <li><a href="#memory"><span>05</span>Memory</a></li>
+    <li><a href="#guardrails"><span>06</span>Guardrails</a></li>
+    <li><a href="#observability"><span>07</span>Observability</a></li>
+    <li><a href="#result"><span>08</span>Result</a></li>
+    <li><a href="#assembled"><span>··</span>All together</a></li>
+  </ol>
+</nav>
+
+<main style="min-width:0">
+
+<!-- 01 -->
+<section class="block" id="trigger">
+  <p class="tag">01 · Entry point</p>
+  <h2>Trigger and interface</h2>
+  <p class="lede">This is where work enters the agent. It answers three questions before Claude sees anything: who is asking, through which channel, and is this a new conversation or a continuing one.</p>
+  <div class="flow" aria-label="Internal flow">
+    <span class="step"><i>1</i>Event arrives</span><span class="arrow" aria-hidden="true">→</span>
+    <span class="step"><i>2</i>Authenticate</span><span class="arrow" aria-hidden="true">→</span>
+    <span class="step"><i>3</i>Find or start session</span><span class="arrow" aria-hidden="true">→</span>
+    <span class="step"><i>4</i>Run the agent</span><span class="arrow" aria-hidden="true">→</span>
+    <span class="step"><i>5</i>Save session id</span>
+  </div>
+  <div class="cols">
+    <div><h3>What's inside</h3>
+      <dl class="parts">
+        <div><dt>Channels</dt><dd>Chat widget, REST endpoint, Slack, email, a ticket queue. Each one is an adapter that turns its event into a prompt.</dd></div>
+        <div><dt>Identity</dt><dd>Your existing auth. The agent should never be the thing deciding who a user is.</dd></div>
+        <div><dt>Sessions</dt><dd>The SDK gives every run a <code>session_id</code>. Store it per user and pass it back as <code>resume</code> to continue the conversation.</dd></div>
+        <div><dt>Scheduled runs</dt><dd>A cron job or queue worker that calls the same function with a fixed prompt, with no human on the other end.</dd></div>
+      </dl>
+    </div>
+    <div class="side">
+      <div class="note ex"><span class="lbl">Refund agent</span>The help widget posts the customer's message to <code>/support/chat</code>. The harness finds this customer's last session and resumes it, so "it" in "where's it now?" still means order 1182.</div>
+      <div class="note warn"><span class="lbl">Common mistakes</span><ul><li>Passing the user id inside the prompt and trusting Claude to keep it. Bind it in code instead (block 05).</li><li>Starting a fresh session on every message, which loses the thread.</li><li>Blocking the HTTP request on long tasks. Queue them and notify when done.</li></ul></div>
+    </div>
+  </div>
+  <figure class="code"><div class="code-bar"><b>app.py</b><button class="copy" type="button">Copy</button></div><pre><code>from fastapi import FastAPI, Depends
+from pydantic import BaseModel
+from claude_agent_sdk import query, ResultMessage
+
+from harness import build_context, build_options   # blocks 02-06
+from auth import current_user                         # your existing auth
+from store import sessions                            # e.g. Redis: user_id -&gt; session_id
+
+app = FastAPI()
+
+class ChatIn(BaseModel):
+    text: str
+
+@app.post("/support/chat")
+async def chat(body: ChatIn, user=Depends(current_user)):
+    prior = sessions.get(user.id)                     # None on first contact
+    options = build_options(user, resume=prior)
+    prompt = build_context(user, body.text)
+
+    reply = None
+    async for msg in query(prompt=prompt, options=options):
+        if isinstance(msg, ResultMessage):            # last message of every run
+            sessions.set(user.id, msg.session_id)
+            reply = msg.result
+    return {"reply": reply}</code></pre></figure>
+  <ul class="explain">
+    <li><span class="mk">L17</span><span><code>resume=prior</code> makes this a continuing conversation. Leave it as <code>None</code> to start fresh.</span></li>
+    <li><span class="mk">L21</span><span>The SDK streams messages as the agent works. <code>ResultMessage</code> always comes last and carries the final text, the session id, and cost.</span></li>
+    <li><span class="mk">Tip</span><span>For a chat UI that needs interrupts or many back-and-forth turns in one connection, use <code>ClaudeSDKClient</code> instead of <code>query()</code>.</span></li>
+  </ul>
+</section>
+
+<!-- 02 -->
+<section class="block" id="context">
+  <p class="tag">02 · What Claude sees</p>
+  <h2>Context assembly</h2>
+  <p class="lede">Claude only knows what is in front of it on each turn. This block decides exactly that: the standing instructions, the facts relevant to this request, and nothing that would distract.</p>
+  <div class="flow" aria-label="Internal flow">
+    <span class="step"><i>1</i>System prompt</span><span class="arrow" aria-hidden="true">→</span>
+    <span class="step"><i>2</i>Retrieve facts</span><span class="arrow" aria-hidden="true">→</span>
+    <span class="step"><i>3</i>Add memories</span><span class="arrow" aria-hidden="true">→</span>
+    <span class="step"><i>4</i>Tag and order</span><span class="arrow" aria-hidden="true">→</span>
+    <span class="step"><i>5</i>Compact when long</span>
+  </div>
+  <div class="cols">
+    <div><h3>What's inside</h3>
+      <dl class="parts">
+        <div><dt>System prompt</dt><dd>Role, scope, rules, tone and output length. It stays the same for every user, which also makes it cache well.</dd></div>
+        <div><dt>Retrieved facts</dt><dd>Only what this request needs: the refund policy section and this customer's recent orders, not the whole knowledge base.</dd></div>
+        <div><dt>XML-style tags</dt><dd>Wrapping each source in its own tag helps Claude tell policy from data from the customer's words.</dd></div>
+        <div><dt>Compaction</dt><dd>The SDK summarizes older turns automatically when the context fills up. A <code>PreCompact</code> hook lets you save notes first.</dd></div>
+      </dl>
+    </div>
+    <div class="side">
+      <div class="note ex"><span class="lbl">Refund agent</span>The prompt includes two policy paragraphs found by search, the last three orders from the database, and one remembered fact: "prefers email updates."</div>
+      <div class="note warn"><span class="lbl">Common mistakes</span><ul><li>Pasting entire documents "just in case." More context means slower, costlier and less focused answers.</li><li>Rules that conflict ("be brief" and "explain fully").</li><li>Putting per-user data in the system prompt, which breaks caching.</li></ul></div>
+    </div>
+  </div>
+  <figure class="code"><div class="code-bar"><b>harness/context.py</b><button class="copy" type="button">Copy</button></div><pre><code>from kb import search          # your vector store or keyword search
+from db import recent_orders
+from memory import facts_for   # block 05
+
+SYSTEM = """You are Sami, the support agent for Northwind Shop.
+Scope: orders, shipping and refunds only. Politely decline anything else.
+Rules:
+- Call get_order before saying anything about an order.
+- Follow the refund policy exactly. If a case is unclear, call escalate.
+- Never invent order numbers, dates or amounts.
+Style: 2-4 short sentences, friendly and plain."""
+
+def build_context(user, text: str) -&gt; str:
+    policy = search("refund policy " + text, k=2)
+    orders = recent_orders(user.id, limit=3)
+    facts = facts_for(user.id)
+
+    return f"""&lt;customer id="{user.id}" tier="{user.tier}"&gt;
+{facts}
+&lt;/customer&gt;
+&lt;recent_orders&gt;
+{orders}
+&lt;/recent_orders&gt;
+&lt;policy&gt;
+{policy}
+&lt;/policy&gt;
+
+Customer message:
+{text}"""</code></pre></figure>
+  <ul class="explain">
+    <li><span class="mk">L5</span><span>The system prompt names scope, rules and style separately. Short, specific rules beat long paragraphs.</span></li>
+    <li><span class="mk">L14</span><span>Retrieval runs per request, using the customer's own words as the search query.</span></li>
+    <li><span class="mk">Tip</span><span>On the raw Messages API, mark the stable system prompt with <code>cache_control: {"type": "ephemeral"}</code> so repeat calls are cheaper and faster. The Agent SDK handles prompt caching for you.</span></li>
+  </ul>
+</section>
+
+<!-- 03 -->
+<section class="block model" id="claude">
+  <p class="tag">03 · The model</p>
+  <h2>Claude and the agent loop</h2>
+  <p class="lede">On each turn Claude reads the context and either answers or asks for a tool. The loop keeps going until Claude answers without asking for a tool, or a limit stops it. The Agent SDK runs this loop for you; below is what it does underneath.</p>
+  <div class="flow" aria-label="Internal flow">
+    <span class="step"><i>1</i>Read context</span><span class="arrow" aria-hidden="true">→</span>
+    <span class="step"><i>2</i>Think</span><span class="arrow" aria-hidden="true">→</span>
+    <span class="step"><i>3</i>Return tool_use or text</span><span class="arrow" aria-hidden="true">→</span>
+    <span class="step"><i>4</i>Harness runs tool</span><span class="arrow" aria-hidden="true">→</span>
+    <span class="loopback">↻ back to 1 until stop_reason is end_turn</span>
+  </div>
+  <div class="cols">
+    <div><h3>What's inside</h3>
+      <dl class="parts">
+        <div><dt>stop_reason</dt><dd><code>tool_use</code> means "run these tools and send me the results." <code>end_turn</code> means Claude is done.</dd></div>
+        <div><dt>Thinking and effort</dt><dd>Set <code>effort</code> (low to max) to trade speed for depth. Hard policy calls benefit from more; simple lookups don't.</dd></div>
+        <div><dt>Model choice</dt><dd>Use a larger model for judgment and a smaller, faster one for routing or simple subagents. Subagents can each set their own model.</dd></div>
+        <div><dt>Turn limit</dt><dd>Always cap the loop. A confused agent can otherwise call tools forever.</dd></div>
+      </dl>
+    </div>
+    <div class="side">
+      <div class="note ex"><span class="lbl">Refund agent</span>Turn 1: Claude returns <code>get_order(1182)</code>. Turn 2: it sees "refund pending, $42" and returns <code>issue_refund</code>. Turn 3: it writes the reply and stops.</div>
+      <div class="note warn"><span class="lbl">Common mistakes</span><ul><li>Forgetting to append Claude's own message before the tool results, which breaks the conversation.</li><li>Not matching each <code>tool_result</code> to its <code>tool_use_id</code>.</li><li>No turn limit.</li></ul></div>
+    </div>
+  </div>
+  <figure class="code"><div class="code-bar"><b>loop_from_scratch.py · what the SDK does for you</b><button class="copy" type="button">Copy</button></div><pre><code>import json
+import anthropic
+
+client = anthropic.Anthropic()          # reads ANTHROPIC_API_KEY
+
+def run_agent(user_text, system, tools, execute, max_turns=8):
+    messages = [{"role": "user", "content": user_text}]
+
+    for _ in range(max_turns):
+        resp = client.messages.create(
+            model="claude-sonnet-5-5",
+            max_tokens=2048,
+            system=system,
+            tools=tools,                  # [{"name", "description", "input_schema"}]
+            messages=messages,
+        )
+        messages.append({"role": "assistant", "content": resp.content})
+
+        if resp.stop_reason != "tool_use":          # end_turn: Claude is done
+            return "".join(b.text for b in resp.content if b.type == "text")
+
+        results = []
+        for block in resp.content:
+            if block.type == "tool_use":
+                output = execute(block.name, block.input)   # your code runs it
+                results.append({
+                    "type": "tool_result",
+                    "tool_use_id": block.id,
+                    "content": json.dumps(output),
+                })
+        messages.append({"role": "user", "content": results})
+
+    return "Stopped: turn limit reached."</code></pre></figure>
+  <ul class="explain">
+    <li><span class="mk">L17</span><span>Claude's reply, including its <code>tool_use</code> blocks, goes back into the history before the results.</span></li>
+    <li><span class="mk">L22</span><span>Claude can ask for several tools in one turn. Run them all and return every result in a single user message.</span></li>
+    <li><span class="mk">Tip</span><span>With the Agent SDK you skip all of this and set <code>model</code>, <code>effort</code> and <code>max_turns</code> on <code>ClaudeAgentOptions</code> (see the final section).</span></li>
+  </ul>
+</section>
+
+<!-- 04 -->
+<section class="block" id="tools">
+  <p class="tag">04 · Acting in the world</p>
+  <h2>Tools via MCP</h2>
+  <p class="lede">Claude only asks for a tool. Your code decides whether to run it and what comes back. Good tools have plain names, descriptions that say when to use them, and error messages that tell Claude what to do next.</p>
+  <div class="flow" aria-label="Internal flow">
+    <span class="step"><i>1</i>Claude requests tool</span><span class="arrow" aria-hidden="true">→</span>
+    <span class="step"><i>2</i>Validate input</span><span class="arrow" aria-hidden="true">→</span>
+    <span class="step"><i>3</i>Guardrail check</span><span class="arrow" aria-hidden="true">→</span>
+    <span class="step"><i>4</i>Execute</span><span class="arrow" aria-hidden="true">→</span>
+    <span class="step"><i>5</i>Return result</span>
+  </div>
+  <div class="cols">
+    <div><h3>What's inside</h3>
+      <dl class="parts">
+        <div><dt>@tool</dt><dd>Name, description and input schema, plus an async function that does the work and returns content blocks.</dd></div>
+        <div><dt>In-process MCP server</dt><dd><code>create_sdk_mcp_server</code> bundles your tools. Claude sees them as <code>mcp__support__get_order</code> and so on.</dd></div>
+        <div><dt>External MCP servers</dt><dd>Connect a CRM or database that already speaks MCP over HTTP, with no wrapper code.</dd></div>
+        <div><dt>Annotations</dt><dd>Hints such as <code>readOnlyHint</code> tell clients which tools only read and which change things.</dd></div>
+      </dl>
+    </div>
+    <div class="side">
+      <div class="note ex"><span class="lbl">Refund agent</span>Three tools: <code>get_order</code> (read only), <code>issue_refund</code> (moves money, gated in block 06) and <code>escalate</code> (opens a ticket for a human).</div>
+      <div class="note warn"><span class="lbl">Common mistakes</span><ul><li>Vague descriptions like "order tool." Claude picks tools by their description.</li><li>Returning a stack trace. Return a sentence Claude can act on.</li><li>One giant tool with a <code>mode</code> parameter instead of small, clear tools.</li></ul></div>
+    </div>
+  </div>
+  <figure class="code"><div class="code-bar"><b>harness/tools.py</b><button class="copy" type="button">Copy</button></div><pre><code>import json
+from typing import Any
+from claude_agent_sdk import tool, create_sdk_mcp_server, ToolAnnotations
+
+import db, payments, tickets
+from harness.memory import CURRENT_USER, remember   # block 05
+
+def reply(data: Any) -&gt; dict[str, Any]:
+    return {"content": [{"type": "text", "text": json.dumps(data)}]}
+
+@tool("get_order",
+      "Look up one order by its ID. Call this before discussing any order.",
+      {"order_id": str},
+      annotations=ToolAnnotations(readOnlyHint=True))
+async def get_order(args):
+    order = await db.get_order(args["order_id"], owner=CURRENT_USER.get())
+    if order is None:
+        return reply({"error": "No such order for this customer. "
+                               "Ask them to check the order number."})
+    return reply(order)
+
+@tool("issue_refund",
+      "Refund an order in USD. Only when the refund policy allows it.",
+      {"order_id": str, "amount": float, "reason": str})
+async def issue_refund(args):
+    ref = await payments.refund(args["order_id"], args["amount"], args["reason"])
+    return reply({"refund_id": ref.id, "eta_days": "3-5"})
+
+@tool("escalate",
+      "Hand the case to a human teammate. Include a 2-sentence summary.",
+      {"summary": str})
+async def escalate(args):
+    t = await tickets.open(CURRENT_USER.get(), args["summary"])
+    return reply({"ticket": t.id, "response_time": "within 4 hours"})
+
+support_server = create_sdk_mcp_server(
+    name="support", version="1.0.0",
+    tools=[get_order, issue_refund, escalate, remember],
+)
+
+SUPPORT_TOOLS = [
+    "mcp__support__get_order", "mcp__support__issue_refund",
+    "mcp__support__escalate", "mcp__support__remember",
+]
+
+# An existing MCP server elsewhere can be added the same way:
+# mcp_servers={"crm": {"type": "http", "url": "https://crm.example.com/mcp"}}</code></pre></figure>
+  <ul class="explain">
+    <li><span class="mk">L16</span><span>The owner check happens in code. Even if Claude is tricked into asking for someone else's order, the database won't return it.</span></li>
+    <li><span class="mk">L18</span><span>The error explains what to do next, so Claude can recover instead of guessing.</span></li>
+    <li><span class="mk">L41</span><span>Tool names follow the pattern <code>mcp__&lt;server&gt;__&lt;tool&gt;</code>. You will use these names in permissions and hooks.</span></li>
+  </ul>
+</section>
+
+<!-- 05 -->
+<section class="block" id="memory">
+  <p class="tag">05 · What persists</p>
+  <h2>Memory</h2>
+  <p class="lede">Agents have three kinds of memory: the current context window, the session (resumable conversation), and long-term facts that outlive any session. Each needs a different home.</p>
+  <div class="flow" aria-label="Internal flow">
+    <span class="step"><i>1</i>Load facts at start</span><span class="arrow" aria-hidden="true">→</span>
+    <span class="step"><i>2</i>Resume session</span><span class="arrow" aria-hidden="true">→</span>
+    <span class="step"><i>3</i>Claude saves new facts</span><span class="arrow" aria-hidden="true">→</span>
+    <span class="step"><i>4</i>Save notes before compaction</span>
+  </div>
+  <div class="cols">
+    <div><h3>What's inside</h3>
+      <dl class="parts">
+        <div><dt>Working memory</dt><dd>The context window itself. Fast, but it is reset or compacted.</dd></div>
+        <div><dt>Session</dt><dd>Stored transcript you continue with <code>resume</code>. Use <code>session_store</code> to keep transcripts in your own backend across servers.</dd></div>
+        <div><dt>Long-term facts</dt><dd>Your own table of short facts per user, written by a <code>remember</code> tool and read back in block 02.</dd></div>
+        <div><dt>Bound identity</dt><dd>A context variable holds the current user, so tools never take a user id from Claude.</dd></div>
+      </dl>
+    </div>
+    <div class="side">
+      <div class="note ex"><span class="lbl">Refund agent</span>Claude calls <code>remember("Prefers email updates; had a damaged-item refund in March")</code>. Next month that fact is in the context before the customer says a word.</div>
+      <div class="note warn"><span class="lbl">Common mistakes</span><ul><li>Storing whole transcripts as "memory." Store short, useful facts.</li><li>No way for users to see or delete what is remembered.</li><li>Letting one customer's memory leak into another's context.</li></ul></div>
+    </div>
+  </div>
+  <figure class="code"><div class="code-bar"><b>harness/memory.py</b><button class="copy" type="button">Copy</button></div><pre><code>import json
+from contextvars import ContextVar
+from claude_agent_sdk import tool
+import db
+
+CURRENT_USER: ContextVar[str] = ContextVar("current_user")
+
+def facts_for(user_id: str) -&gt; str:
+    rows = db.memory.list(user_id, limit=10)      # newest first
+    return "\n".join(f"- {r.fact}" for r in rows) or "- (no saved facts)"
+
+@tool("remember",
+      "Save one durable fact about this customer, such as a preference "
+      "or a past issue. One short sentence. Never save payment details.",
+      {"fact": str})
+async def remember(args):
+    fact = args["fact"].strip()[:200]
+    await db.memory.add(CURRENT_USER.get(), fact)
+    return {"content": [{"type": "text", "text": json.dumps({"saved": True})}]}
+
+async def save_before_compact(input_data, tool_use_id, context):
+    # Fires before the SDK summarizes old turns (PreCompact hook).
+    await db.notes.add(input_data["session_id"], "context compacted")
+    return {}</code></pre></figure>
+  <ul class="explain">
+    <li><span class="mk">L6</span><span>Set <code>CURRENT_USER</code> at the start of each request (see the final section). Tools read it; Claude never supplies it.</span></li>
+    <li><span class="mk">L12</span><span>The description sets the rules for what counts as memory, including what never to store.</span></li>
+    <li><span class="mk">L21</span><span>Register this under <code>"PreCompact"</code> in the hooks to keep a record when old turns get summarized.</span></li>
+  </ul>
+</section>
+
+<!-- 06 -->
+<section class="block" id="guardrails">
+  <p class="tag">06 · Safety and policy</p>
+  <h2>Guardrails</h2>
+  <p class="lede">Prompts ask Claude to behave; guardrails make sure it does. They run in your code, before tools execute, so they hold even if a prompt is ignored or manipulated.</p>
+  <div class="flow" aria-label="Internal flow">
+    <span class="step"><i>1</i>Tool requested</span><span class="arrow" aria-hidden="true">→</span>
+    <span class="step"><i>2</i>Is it allowed at all?</span><span class="arrow" aria-hidden="true">→</span>
+    <span class="step"><i>3</i>PreToolUse hook checks policy</span><span class="arrow" aria-hidden="true">→</span>
+    <span class="step"><i>4</i>Allow or deny with reason</span>
+  </div>
+  <div class="cols">
+    <div><h3>What's inside</h3>
+      <dl class="parts">
+        <div><dt>Tool allowlist</dt><dd><code>tools=[]</code> removes built-in shell and file tools. <code>allowed_tools</code> plus <code>permission_mode="dontAsk"</code> denies anything not listed.</dd></div>
+        <div><dt>PreToolUse hooks</dt><dd>Run before every matching call. Return <code>deny</code> with a reason and Claude reads that reason and adapts.</dd></div>
+        <div><dt>Hard limits</dt><dd><code>max_turns</code> and <code>max_budget_usd</code> stop runaway runs.</dd></div>
+        <div><dt>Human approval</dt><dd>For actions above a threshold, deny and route to a human through <code>escalate</code>.</dd></div>
+      </dl>
+    </div>
+    <div class="side">
+      <div class="note ex"><span class="lbl">Refund agent</span>$42 passes the hook and runs. A $240 request is denied with "needs a human, call escalate," so Claude opens a ticket and tells the customer.</div>
+      <div class="note warn"><span class="lbl">Common mistakes</span><ul><li>Relying on "never refund more than $100" in the prompt alone.</li><li>Denying without a reason, so Claude retries the same call.</li><li>Using <code>bypassPermissions</code> in production.</li></ul></div>
+    </div>
+  </div>
+  <figure class="code"><div class="code-bar"><b>harness/guardrails.py</b><button class="copy" type="button">Copy</button></div><pre><code>from claude_agent_sdk import HookMatcher
+import db, policy
+
+REFUND_LIMIT_USD = 100
+
+def deny(reason: str) -&gt; dict:
+    return {"hookSpecificOutput": {
+        "hookEventName": "PreToolUse",
+        "permissionDecision": "deny",
+        "permissionDecisionReason": reason,
+    }}
+
+async def refund_guard(input_data, tool_use_id, context):
+    args = input_data["tool_input"]
+    amount = float(args.get("amount", 0))
+
+    if amount &gt; REFUND_LIMIT_USD:
+        return deny(f"Refunds over ${REFUND_LIMIT_USD} need a human. "
+                    "Call escalate with a short summary instead.")
+
+    order = await db.get_order(args["order_id"])
+    if order is None or not policy.refund_eligible(order, amount):
+        return deny("This order is not eligible under the refund policy. "
+                    "Explain why to the customer, or escalate if unsure.")
+    return {}                                    # no objection: proceed
+
+GUARD_HOOKS = {
+    "PreToolUse": [
+        HookMatcher(matcher="mcp__support__issue_refund", hooks=[refund_guard]),
+    ],
+}
+
+LIMITS = dict(
+    tools=[],                      # no built-in shell or file tools
+    permission_mode="dontAsk",     # anything not in allowed_tools is denied
+    max_turns=8,
+    max_budget_usd=0.50,
+)</code></pre></figure>
+  <ul class="explain">
+    <li><span class="mk">L18</span><span>The deny reason is written for Claude. It says what went wrong and what to do instead.</span></li>
+    <li><span class="mk">L21</span><span>Re-check eligibility from the database. Don't trust amounts or claims that only appear in the conversation.</span></li>
+    <li><span class="mk">L29</span><span>The matcher limits this hook to one tool. A hook without a matcher runs for every tool.</span></li>
+  </ul>
+</section>
+
+<!-- 07 -->
+<section class="block" id="observability">
+  <p class="tag">07 · Seeing and proving it works</p>
+  <h2>Observability</h2>
+  <p class="lede">You can't improve an agent you can't see. Log every tool call, record cost and turns for every run, and keep a test set that you rerun whenever you change the prompt, tools or model.</p>
+  <div class="flow" aria-label="Internal flow">
+    <span class="step"><i>1</i>Log tool calls</span><span class="arrow" aria-hidden="true">→</span>
+    <span class="step"><i>2</i>Record run metrics</span><span class="arrow" aria-hidden="true">→</span>
+    <span class="step"><i>3</i>Review failures</span><span class="arrow" aria-hidden="true">→</span>
+    <span class="step"><i>4</i>Add to eval set</span><span class="arrow" aria-hidden="true">→</span>
+    <span class="loopback">↻ rerun evals after every change</span>
+  </div>
+  <div class="cols">
+    <div><h3>What's inside</h3>
+      <dl class="parts">
+        <div><dt>Audit log</dt><dd>A <code>PostToolUse</code> hook records tool name, input and output for every call.</dd></div>
+        <div><dt>Run metrics</dt><dd><code>ResultMessage</code> carries <code>num_turns</code>, <code>duration_ms</code>, <code>total_cost_usd</code> and <code>is_error</code>.</dd></div>
+        <div><dt>Evals</dt><dd>Fixed inputs with expected behavior, run against a test database. Check which tools were called, not exact wording.</dd></div>
+        <div><dt>Transcripts</dt><dd>The saved session lets you replay exactly what Claude saw when something went wrong.</dd></div>
+      </dl>
+    </div>
+    <div class="side">
+      <div class="note ex"><span class="lbl">Refund agent</span>Dashboard: 1,240 chats this week, 3.1 turns and $0.04 per chat on average, 6% escalated. One eval case caught a prompt change that made Claude skip <code>get_order</code>.</div>
+      <div class="note warn"><span class="lbl">Common mistakes</span><ul><li>Running evals against production systems.</li><li>Grading exact sentences, which fails on harmless rewording.</li><li>Logging card numbers or other secrets from tool inputs.</li></ul></div>
+    </div>
+  </div>
+  <figure class="code"><div class="code-bar"><b>harness/observe.py</b><button class="copy" type="button">Copy</button></div><pre><code>import logging
+from claude_agent_sdk import (HookMatcher, query, AssistantMessage,
+                              ToolUseBlock, ResultMessage)
+
+log = logging.getLogger("agent")
+
+async def audit(input_data, tool_use_id, context):
+    log.info("tool_call", extra={
+        "session": input_data["session_id"],
+        "tool": input_data["tool_name"],
+        "input": input_data["tool_input"],
+        "output": str(input_data.get("tool_response"))[:500],
+    })
+    return {}
+
+AUDIT_HOOKS = {"PostToolUse": [HookMatcher(hooks=[audit])]}
+
+def record(msg: ResultMessage):
+    log.info("run_done", extra={
+        "session": msg.session_id, "turns": msg.num_turns,
+        "ms": msg.duration_ms, "cost_usd": msg.total_cost_usd,
+        "ok": not msg.is_error, "subtype": msg.subtype,
+    })
+
+# Evals: run against a TEST database, check behavior not wording
+CASES = [
+    ("Refund order 1182, it arrived broken ($42)", "mcp__support__issue_refund"),
+    ("Refund order 2207, the $240 TV",            "mcp__support__escalate"),
+    ("What's your CEO's phone number?",            None),
+]
+
+async def tools_used(prompt, options):
+    names = []
+    async for msg in query(prompt=prompt, options=options):
+        if isinstance(msg, AssistantMessage):
+            names += [b.name for b in msg.content if isinstance(b, ToolUseBlock)]
+    return names
+
+async def run_evals(make_options, make_prompt):
+    passed = 0
+    for text, expected in CASES:
+        used = await tools_used(make_prompt(text), make_options())
+        ok = (expected in used) if expected else not any(
+            n.endswith(("issue_refund", "escalate")) for n in used)
+        passed += ok
+        print("PASS" if ok else "FAIL", text, used)
+    print(f"{passed}/{len(CASES)} passed")</code></pre></figure>
+  <ul class="explain">
+    <li><span class="mk">L7</span><span>A hook without a matcher runs after every tool call, so nothing is missed.</span></li>
+    <li><span class="mk">L18</span><span>Call <code>record()</code> on each <code>ResultMessage</code> in your endpoint. Cost is an estimate computed by the SDK.</span></li>
+    <li><span class="mk">L36</span><span>Reading <code>ToolUseBlock</code>s from the message stream shows exactly which tools Claude chose.</span></li>
+  </ul>
+</section>
+
+<!-- 08 -->
+<section class="block" id="result">
+  <p class="tag">08 · Handing back</p>
+  <h2>Result delivered</h2>
+  <p class="lede">The run ends with a <code>ResultMessage</code>. Check whether it succeeded, turn it into something your app can act on, and have a plan for when it didn't.</p>
+  <div class="flow" aria-label="Internal flow">
+    <span class="step"><i>1</i>Check subtype</span><span class="arrow" aria-hidden="true">→</span>
+    <span class="step"><i>2</i>Read structured output</span><span class="arrow" aria-hidden="true">→</span>
+    <span class="step"><i>3</i>Update your systems</span><span class="arrow" aria-hidden="true">→</span>
+    <span class="step"><i>4</i>Reply or hand off</span>
+  </div>
+  <div class="cols">
+    <div><h3>What's inside</h3>
+      <dl class="parts">
+        <div><dt>Subtype</dt><dd><code>success</code>, or an error such as <code>error_max_turns</code> or <code>error_max_budget_usd</code>.</dd></div>
+        <div><dt>Structured output</dt><dd>Set <code>output_format</code> to a JSON schema and read <code>structured_output</code>, so your code never parses prose.</dd></div>
+        <div><dt>Side effects</dt><dd>Close the ticket, update the CRM, notify the customer by their preferred channel.</dd></div>
+        <div><dt>Fallback</dt><dd>When a run fails, give the user a clear message and route to a human with the session attached.</dd></div>
+      </dl>
+    </div>
+    <div class="side">
+      <div class="note ex"><span class="lbl">Refund agent</span>Output: <code>{"status": "resolved", "refund_usd": 42, "reply": "Your $42 refund was issued today and will arrive in 3-5 business days."}</code> The ticket closes automatically.</div>
+      <div class="note warn"><span class="lbl">Common mistakes</span><ul><li>Treating any final text as success.</li><li>Parsing Claude's prose with regex to find the status.</li><li>Showing the customer a raw error.</li></ul></div>
+    </div>
+  </div>
+  <figure class="code"><div class="code-bar"><b>harness/result.py</b><button class="copy" type="button">Copy</button></div><pre><code>from claude_agent_sdk import ResultMessage
+import tickets, notify
+
+REPLY_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "reply": {"type": "string"},
+        "status": {"type": "string",
+                   "enum": ["resolved", "escalated", "needs_info"]},
+        "refund_usd": {"type": ["number", "null"]},
+    },
+    "required": ["reply", "status"],
+}
+
+OUTPUT = dict(output_format={"type": "json_schema", "schema": REPLY_SCHEMA})
+
+FALLBACK = {"reply": "I'm passing this to a teammate who will reply "
+                     "within 4 hours.", "status": "escalated"}
+
+async def handle(user, msg: ResultMessage) -&gt; dict:
+    if msg.subtype == "success" and not msg.is_error and msg.structured_output:
+        out = msg.structured_output
+        if out["status"] == "resolved":
+            await tickets.close_for(user.id, session=msg.session_id)
+        await notify.send(user, out["reply"])     # email, if they prefer it
+        return out
+
+    # error_max_turns, error_max_budget_usd, API errors ...
+    await tickets.open(user.id, f"Agent run failed: {msg.subtype}",
+                       session=msg.session_id)
+    return FALLBACK</code></pre></figure>
+  <ul class="explain">
+    <li><span class="mk">L15</span><span>With <code>output_format</code> set, the SDK validates Claude's final answer against your schema.</span></li>
+    <li><span class="mk">L21</span><span>Check both <code>subtype</code> and <code>is_error</code>. A run can finish its loop and still end on a failed API call.</span></li>
+    <li><span class="mk">L30</span><span>The session id goes with the handoff, so the human sees the full conversation.</span></li>
+  </ul>
+</section>
+
+<section class="assembled" id="assembled">
+  <p class="tag">All eight blocks</p>
+  <h2>Putting it together</h2>
+  <p>This is the one function that wires every block into <code>ClaudeAgentOptions</code>, plus the updated endpoint. Swap the mock modules (<code>db</code>, <code>payments</code>, <code>tickets</code>) for your own and it runs.</p>
+  <figure class="code"><div class="code-bar"><b>harness/__init__.py</b><button class="copy" type="button">Copy</button></div><pre><code>from claude_agent_sdk import ClaudeAgentOptions, HookMatcher
+
+from .context import SYSTEM, build_context                 # 02
+from .tools import support_server, SUPPORT_TOOLS            # 04
+from .memory import CURRENT_USER, save_before_compact       # 05
+from .guardrails import GUARD_HOOKS, LIMITS                 # 06
+from .observe import AUDIT_HOOKS, record                    # 07
+from .result import OUTPUT, handle                          # 08
+
+def build_options(user, resume=None) -&gt; ClaudeAgentOptions:
+    CURRENT_USER.set(user.id)                               # bind identity
+    return ClaudeAgentOptions(
+        system_prompt=SYSTEM,
+        model="claude-sonnet-5-5",                          # 03
+        effort="medium",
+        mcp_servers={"support": support_server},
+        allowed_tools=SUPPORT_TOOLS,
+        hooks={
+            **GUARD_HOOKS,
+            **AUDIT_HOOKS,
+            "PreCompact": [HookMatcher(hooks=[save_before_compact])],
+        },
+        resume=resume,
+        setting_sources=[],              # ignore local CLAUDE.md and settings
+        **LIMITS,
+        **OUTPUT,
+    )
+
+
+# app.py, the endpoint from block 01 with blocks 07-08 added
+@app.post("/support/chat")
+async def chat(body: ChatIn, user=Depends(current_user)):
+    options = build_options(user, resume=sessions.get(user.id))
+    out = None
+    async for msg in query(prompt=build_context(user, body.text), options=options):
+        if isinstance(msg, ResultMessage):
+            sessions.set(user.id, msg.session_id)
+            record(msg)
+            out = await handle(user, msg)
+    return out</code></pre></figure>
+  <p style="margin:0">Install with <code>pip install claude-agent-sdk</code> inside a virtual environment and set <code>ANTHROPIC_API_KEY</code>. APIs change often, so check the <a href="https://code.claude.com/docs/en/agent-sdk/python">Agent SDK Python reference</a> before shipping.</p>
+</section>
+
+</main>
+</div>
+<footer>Agent Harness Field Guide · Code targets the Claude Agent SDK for Python as documented in October 2026.</footer>
+</div>
+
+<script>
+(function(){
+  var KW=/\b(async|def|await|return|if|elif|else|from|import|for|in|not|and|or|None|True|False|with|as|class|try|except|raise|lambda|is)\b/;
+  var TOK=/("""[\s\S]*?"""|f?"(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*'|\b\d+(?:\.\d+)?\b|\b[A-Za-z_]+\b)/g;
+  function esc(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+  function commentAt(line){var q=null;for(var i=0;i<line.length;i++){var ch=line[i];if(q){if(ch==="\\"){i++;continue}if(ch===q)q=null}else if(ch==='"'||ch==="'"){q=ch}else if(ch==="#"){return i}}return -1;}
+  function hlCode(src){
+    var out="",last=0,m;TOK.lastIndex=0;
+    while((m=TOK.exec(src))){
+      out+=esc(src.slice(last,m.index));var t=m[0];
+      if(t[0]==='"'||t[0]==="'"||(t[0]==="f"&&t[1]==='"'))out+='<span class="s">'+esc(t)+'</span>';
+      else if(/^\d/.test(t))out+='<span class="n">'+t+'</span>';
+      else if(KW.test(t)&&t.match(KW)[0]===t)out+='<span class="k">'+t+'</span>';
+      else out+=esc(t);
+      last=TOK.lastIndex;
+    }
+    return out+esc(src.slice(last));
+  }
+  document.querySelectorAll("pre code").forEach(function(el){
+    var src=el.textContent, html="", inTriple=false;
+    src.split("\n").forEach(function(line,idx){
+      if(idx)html+="\n";
+      var tq=(line.match(/"""/g)||[]).length;
+      if(inTriple||(tq===1)){
+        html+='<span class="s">'+esc(line)+'</span>';
+        if(tq===1)inTriple=!inTriple;
+        return;
+      }
+      var c=commentAt(line);
+      if(c>=0){html+=hlCode(line.slice(0,c))+'<span class="c">'+esc(line.slice(c))+'</span>';}
+      else html+=hlCode(line);
+    });
+    el.innerHTML=html;
+  });
+
+  document.querySelectorAll(".copy").forEach(function(btn){
+    btn.addEventListener("click",function(){
+      var code=btn.closest("figure").querySelector("code");
+      var text=code.textContent;
+      function done(label){btn.textContent=label;setTimeout(function(){btn.textContent="Copy"},1600);}
+      function fallback(){var r=document.createRange();r.selectNodeContents(code);var s=window.getSelection();s.removeAllRanges();s.addRange(r);done("Selected");}
+      try{navigator.clipboard.writeText(text).then(function(){done("Copied")},fallback);}catch(e){fallback();}
+    });
+  });
+
+  var links=[].slice.call(document.querySelectorAll("nav.index a"));
+  if("IntersectionObserver" in window){
+    var obs=new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if(en.isIntersecting){
+          links.forEach(function(a){
+            var on=a.getAttribute("href")==="#"+en.target.id;
+            a.classList.toggle("on",on);
+            if(on&&a.scrollIntoView&&window.innerWidth<900){var ol=a.closest("ol");ol.scrollLeft=a.offsetLeft-16;}
+          });
+        }
+      });
+    },{rootMargin:"-30% 0px -60% 0px"});
+    document.querySelectorAll(".block,.assembled").forEach(function(s){obs.observe(s)});
+  }
+})();
+</script>
+
+</body></html>
